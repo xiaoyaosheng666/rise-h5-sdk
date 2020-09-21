@@ -18,12 +18,24 @@ EventEmitter.prototype.on = function (event, cb) {
 }
 EventEmitter.prototype.addListener = EventEmitter.prototype.on;
 
+/**
+ * 触发事件，返回 Promise
+ * @param {String} event 事件名
+ */
 EventEmitter.prototype.emit = function (event) {
   var args = Array.prototype.slice.call(arguments);
   args.shift();
-  this.listeners[event].forEach(cb => {
-    cb.apply(null, args);
+  const list = this.listeners[event] || [];
+  // 事件包装成 Promise
+  const promiseList = list.map(item => {
+    const result = cb.apply(null, args);
+    if (result instanceof Promise) {
+      return result;
+    } else {
+      return new Promise(r => r(result));
+    }
   });
+  return Promise.all(promiseList);
 }
 
 EventEmitter.prototype.listeners = function (event) {
