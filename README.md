@@ -1,12 +1,12 @@
 # Rise课件对接说明
 
 ## SDK
-引入 `rise_h5_sdk.js` ，即可使用 window.riseObserver 对象和 window.callRiseIframe 函数
+引入 `rise-h5-sdk.js` ，即可使用 window.riseObserver 对象和 window.callRiseIframe 函数
 
 或者使用 npm:
-`npm install rise_h5_sdk --save`
+`npm install rise-h5-sdk --save`
 ```javascript
-import { riseObserver, callRiseIframe } from 'rise_h5_sdk'
+import { riseObserver, callRiseIframe } from 'rise-h5-sdk'
 ```
 
 
