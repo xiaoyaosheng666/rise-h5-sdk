@@ -1,10 +1,14 @@
 {
-  "name": "rise-h5-courseware",
+  "name": "rise-h5-sdk",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xiaoyaosheng666/rise-h5-sdk.git"
   },
   "author": "",
   "license": "ISC"

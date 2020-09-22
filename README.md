@@ -1,7 +1,14 @@
 # Rise课件对接说明
 
 ## SDK
-引入 `rise_h5_sdk.js` ，即可使用 window.riseObserver 对象和 window.callRiseIframe 函数 
+引入 `rise_h5_sdk.js` ，即可使用 window.riseObserver 对象和 window.callRiseIframe 函数
+
+或者使用 npm:
+`npm install rise_h5_sdk --save`
+```javascript
+import { riseObserver, callRiseIframe } from 'rise_h5_sdk'
+```
+
 
 ## 同屏关键操作：
 1. 通过 riseObserver.on(key,fn) 注册所有需要同步的渲染相关函数（**fn是纯粹的渲染行为函数**）
@@ -10,7 +17,7 @@
 
 #### 渲染函数说明：
 通过  riseObserver.on(key,fn) 注册的渲染函数需要 return 一个 Promise,在渲染执行完成后 resolve.
-这是为了在同步多个渲染函数时，可以确保上一个渲染函数已执行完毕再执行下一个渲染。（例如：当前渲染函数依赖于上一个渲染函数动态生成的dom时就很有用）
+这是为了在同步多个渲染函数时，可以确保上一个渲染函数已执行完毕再执行下一个渲染。（例如：当前渲染函数存在动画过程时，且后续渲染函数对其有依赖时就很有必要）
 
 #### callRiseIframe的参数格式：
 ```javascript
@@ -38,7 +45,7 @@
 behavior  | 参数 | 说明
 ------------- | ------------- | -------------
 load |  | 课件加载完成事件
-setLocation  |obj:{layer:Number,page:Number,scence:Number}  | 控制课件的翻页，参数说明： layer:课件层级，page:进入课件的第几页，scence:进入page页的第几个场景
+setLocation  |obj:{layer:Number,page:Number,scene:Number}  | 控制课件的翻页，参数说明： layer:课件层级，page:进入课件的第几页，scene:进入page页的第几个场景
 mediaProgress  | num:Number  | 媒体资源（音、视频）的播放进度事件
 mediaPlay  |   | 媒体资源（音、视频）的播放事件
 mediaPause  |   | 媒体资源（音、视频）的播放停止事件
@@ -46,8 +53,10 @@ mediaStopAll  |   | 暂停所有的媒体资源（音、视频）播放
 
 1.使用  riseObserver.on(key,fn) 注册这些 behavior,例如:
 ```javascript
-riseObserver.on('setPage',function(page){
+riseObserver.on('setLocation',function({layer,page,scene}){
+  // 课件进入第 layer 层级
   // 课件翻页到第 page 页
+  // 课件切换到第 scene 个场景
 })
 ```
 ## 需要第三方主动发起的调用:
@@ -77,6 +86,8 @@ callRiseIframe({
 当媒体资源进行播放时发起 `mediaPlay`   通知;
 当媒体资源停止播放时发起 `mediaPause`   通知;
 当媒体资源的播放进度变更时候发起  `mediaProgress`   通知（为了防止频繁通知，暂定3秒发起一次通知）;
+
+注：媒体资源Rise会在直播教室做特殊处理，所以需要按照上述约定的命名 behavior，target 一定要确保可以使用 document.querySelector 函数定位到这个媒体资源
 
 
 ## 示例DEMO：

@@ -125,3 +125,8 @@ window.callRiseIframe = function (data) {
 };
 
 window.riseObserver = new EventEmitter();
+
+export {
+  riseObserver,
+  callRiseIframe
+}
