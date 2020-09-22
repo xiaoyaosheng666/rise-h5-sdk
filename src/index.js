@@ -110,7 +110,8 @@ const fastTimer = setInterval(() => {
   }
 }, fastTimerDelay);
 
-window.callRiseIframe = function (data) {
+const riseObserver = new EventEmitter();
+const callRiseIframe = function (data) {
   if (data.interval) {
     bufferMap.set(data.behavior, data);
   } else if (data.waitOn && data.waitOn.length > 0) {
@@ -124,7 +125,8 @@ window.callRiseIframe = function (data) {
   }
 };
 
-window.riseObserver = new EventEmitter();
+window.riseObserver = riseObserver;
+window.callRiseIframe = callRiseIframe;
 
 export {
   riseObserver,
