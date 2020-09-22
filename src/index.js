@@ -125,8 +125,8 @@ const callRiseIframe = function (data) {
   }
 };
 
-window.riseObserver = riseObserver;
-window.callRiseIframe = callRiseIframe;
+// window.riseObserver = riseObserver;
+// window.callRiseIframe = callRiseIframe;
 
 export {
   riseObserver,
