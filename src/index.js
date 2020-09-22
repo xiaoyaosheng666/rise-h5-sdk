@@ -27,7 +27,7 @@ EventEmitter.prototype.emit = function (event) {
   args.shift();
   const list = this.listeners[event] || [];
   // 事件包装成 Promise
-  const promiseList = list.map(item => {
+  const promiseList = list.map(cb => {
     const result = cb.apply(null, args);
     if (result instanceof Promise) {
       return result;
