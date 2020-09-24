@@ -1,0 +1,215 @@
+body {
+  margin: 0;
+}
+img {
+  vertical-align: bottom;
+}
+#app {
+  width: 100vw;
+  height: 100vh;
+  background-color: #000000;
+}
+.title{
+  position: fixed;
+  top: 50px;
+  color: #ffffff;
+  font-size: .3rem;
+  text-align: center;
+}
+.title p{
+  display: none;
+}
+.page {
+  width: 12rem;
+  height: 8.16rem;
+  position: relative;
+  display: none;
+}
+.show {
+  display: block !important;
+}
+.hide {
+  display: none!important;
+}
+.img-bg-1 {
+  width: 12rem;
+  height: 8.16rem;
+}
+.flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.pin-container {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+.tortoise-counter {
+  position: absolute;
+  top: 0;
+  left: 3rem;
+  font-size: 1rem;
+  color: #ffffff;
+}
+.tortoise-box {
+  position: absolute;
+  height: 1.15rem;
+  z-index: 1;
+}
+.tortoise-box.active .halo {
+  animation: none;
+  background-color: #ffffff;
+  opacity: 0.9;
+}
+.tortoise-box-1 {
+  top: 2.1rem;
+  left: 0.5rem;
+}
+.tortoise-box-2 {
+  top: 1.36rem;
+  left: 1.79rem;
+}
+.tortoise-box-3 {
+  top: 2.01rem;
+  left: 3.62rem;
+}
+.tortoise {
+  height: 100%;
+  width: auto;
+  position: relative;
+  z-index: 2;
+}
+
+.eggshell {
+  position: absolute;
+  top: 2.24rem;
+  left: 1.72rem;
+  height: 0.87rem;
+  z-index: 1;
+}
+
+@keyframes twinkle {
+  0% {
+    background: #ffff00;
+    opacity: 1;
+  }
+  50% {
+    background: #ffff99;
+    opacity: 0.7;
+  }
+  100% {
+    background: #ffffff;
+    opacity: 0.5;
+  }
+}
+.halo {
+  position: absolute;
+  width: 0.7rem;
+  height: 0.9rem;
+  top: -0.2rem;
+  left: 50%;
+  margin-left: -0.35rem;
+  border-radius: 50%;
+  z-index: 1;
+  opacity: 0.7;
+  animation: twinkle 500ms linear 0s infinite alternate;
+}
+
+.next-page {
+  width: 2rem;
+  height: auto;
+  position: absolute;
+  bottom: -0.6rem;
+  right: -0.6rem;
+  z-index: 2;
+}
+
+/* 第二关 */
+.egg_break {
+  width: 1rem;
+  position: absolute;
+  z-index: 3;
+  bottom: 0;
+}
+.tt-box {
+  position: absolute;
+  width: 1rem;
+  height: 1.15rem;
+  z-index: 1;
+}
+.tt-box-1 {
+  top: 2.1rem;
+  left: 0.5rem;
+}
+.tt-box-2 {
+  top: 1.36rem;
+  left: 1.79rem;
+}
+.tt-box-3 {
+  top: 2.01rem;
+  left: 3.62rem;
+}
+.tt {
+  width: auto;
+  height: 1.15rem;
+  width: auto;
+  position: absolute;
+  /* top: -0.1rem; */
+  z-index: 2;
+}
+
+.pool{
+  position: absolute;
+  width: 100%;
+  height: 3.2rem;
+  left: 0;
+  bottom: 1.2rem;
+}
+.pool-tt {
+  position: absolute;
+  width: 2.55rem;
+  display: none;
+}
+.pool-tt-1 {
+  top: 3.54rem;
+  left: 1.4rem;
+}
+.pool-tt-2 {
+  top: 4rem;
+  left: 2.2rem;
+  z-index: 4;
+}
+.pool-tt-3 {
+  top: 3.6rem;
+  left: 3.1rem;
+}
+.pool-tt-counter {
+  position: absolute;
+  left: 40%;
+  top: 32%;
+  width: auto;
+  height: 2.13rem;
+  display: none;
+}
+.fixed {
+  position: fixed !important;
+}
+#video1{
+  width: 100%;
+  height: auto;
+  position: absolute;
+  top: 0;
+  z-index: 99;
+  display: none;
+}
+
+/* 测试 */
+#test-1 {
+  position: absolute;
+  top: 20px;
+  right: 50px;
+  color: #ffffff;
+}

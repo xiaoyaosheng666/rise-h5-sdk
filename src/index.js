@@ -113,7 +113,8 @@ const fastTimer = setInterval(() => {
 const riseObserver = new EventEmitter();
 const callRiseIframe = function (data) {
   if (data.interval) {
-    bufferMap.set(data.behavior, data);
+    const key = `${data.target}-${data.behavior}`;
+    bufferMap.set(key, data);
   } else if (data.waitOn && data.waitOn.length > 0) {
     // 设置延迟执行大于定时执行队列延迟来实现等待队列完成
     setTimeout(() => {

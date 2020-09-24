@@ -40,18 +40,25 @@ import { riseObserver, callRiseIframe } from 'rise-h5-sdk'
 
 
 ## 特定的 behavior：
-特定的 behavior 是需要第三方必须注册的事件:
+
+这些 behavior 是 SDK 中留做特殊用途的声明
+
+- load
+- setLocation
+- mediaPlay
+- mediaPause
+- mediaProgress
+- mediaStopAll
+
+### SDK会主动发起的调用：
+需要第三方提前注册好相应的 behavior 事件，供 SDK 后续调用:
 
 behavior  | 参数 | 说明
 ------------- | ------------- | -------------
-load |  | 课件加载完成事件
 setLocation  |obj:{layer:Number,page:Number,scene:Number}  | 控制课件的翻页，参数说明： layer:课件层级，page:进入课件的第几页，scene:进入page页的第几个场景
-mediaProgress  | num:Number  | 媒体资源（音、视频）的播放进度事件
-mediaPlay  |   | 媒体资源（音、视频）的播放事件
-mediaPause  |   | 媒体资源（音、视频）的播放停止事件
 mediaStopAll  |   | 暂停所有的媒体资源（音、视频）播放
 
-1.使用  riseObserver.on(key,fn) 注册这些 behavior,例如:
+使用  riseObserver.on(key,fn) 注册这些 behavior,例如:
 ```javascript
 riseObserver.on('setLocation',function({layer,page,scene}){
   // 课件进入第 layer 层级
@@ -59,8 +66,17 @@ riseObserver.on('setLocation',function({layer,page,scene}){
   // 课件切换到第 scene 个场景
 })
 ```
-## 需要第三方主动发起的调用:
-### 1.课件加载完成通知
+
+### 需要第三方主动发起的调用:
+
+behavior  | 参数 | 说明
+------------- | ------------- | -------------
+load | {totalPage:Number,currentPage:Number} | 课件加载完成事件，参数说明：totalPage:课件总页数，currentPage：课件当前页数
+mediaPlay  |   | 媒体资源（音、视频）的播放事件
+mediaPause  |   | 媒体资源（音、视频）的播放停止事件
+mediaProgress  | {currentTime:Number}  | 媒体资源（音、视频）的播放进度事件,参数说明： currentTime:音视频的当前播放位置（以秒计）
+
+#### 1.课件加载完成通知
 需要第三方在课件加载完成后，主动发起一次 `load`   通知:
 ```javascript
 // 课件已加载完成
@@ -78,14 +94,12 @@ callRiseIframe({
     totalPage: 10, // 此课件总页数
 	currentPage:1, // 当前所处的页数，如果所处的是导航地图页，设置  -1
   },
-  interval: false,
-  waitOn: []
 })
 ```
-### 2.媒体资源的播放、停止事件通知：
+#### 2.媒体资源的播放、停止事件通知：
 当媒体资源进行播放时发起 `mediaPlay`   通知;
 当媒体资源停止播放时发起 `mediaPause`   通知;
-当媒体资源的播放进度变更时候发起  `mediaProgress`   通知（为了防止频繁通知，暂定3秒发起一次通知）;
+当媒体资源的播放进度变更时候发起  `mediaProgress`   通知（为了防止频繁通知，暂定3秒发起一次通知）;  `mediaProgress` **事件不会再转发给其他用户**。
 
 注：媒体资源Rise会在直播教室做特殊处理，所以需要按照上述约定的命名 behavior，target 一定要确保可以使用 document.querySelector 函数定位到这个媒体资源
 
@@ -94,10 +108,11 @@ callRiseIframe({
 联系瑞思技术人员
 
 ## 如何测试？
-多屏互动必须在瑞思提供的网址内进行：
+多屏互动必须在瑞思提供的网址内进行，同时打开两个浏览器窗口，分别加载以下地址：
 
-同时打开两个浏览器窗口，分别加载以下地址：
 [https://h5demo.riselinkedu.com/](https://h5demo.riselinkedu.com/)
+
+使用瑞思提供的账号登录后进入直播间
 
 
 默认打开的是瑞思提供的示例DEMO：在其中一个窗口的课件进行操作，另一个窗口的课件会自动同步对应的操作。
