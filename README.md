@@ -1,6 +1,5 @@
 # rise 课件对接说明
 
-## SDK
 引入 `rise-h5-sdk.js` ，即可使用 window.riseObserver 对象和 window.callRiseIframe 函数
 
 或者使用:   `npm install rise-h5-sdk --save`
@@ -24,9 +23,9 @@ import { riseObserver, callRiseIframe } from 'rise-h5-sdk'
 {
     target: '目标对象', // 必填，目标对象选择器，推荐使用 id选择器，你可以根据这个 target 识别是哪个元素
     behavior: 'key', // 必填，在  riseObserver.on(key,fn) 中注册的自定义事件名称 key
-	scene:'场景标识', // 必填，当前 behavior 发生时所处的 场景，你可以根据 scene 识别是哪个场景。要求全课件下唯一
+    scene:'场景标识', // 必填，当前 behavior 发生时所处的 场景，你可以根据 scene 识别是哪个场景。要求全课件下唯一
     content: {},   // 自定义参数内容，你可以随意定义你需要的参数， content 本身必须是个对象
-	offline:false, // 表示此消息是否不需要通过 信道 发送给其他用户。默认 false，会同步给其他用户
+    offline:false, // 表示此消息是否不需要通过 信道 发送给其他用户。默认 false，会同步给其他用户
     interval: false, // 像鼠标移动这类事件触发太频繁，需要控制频率，否则通信过于频繁会丢失数据。SDK 内置了实现，只需要指定 interval = true 即可
     waitOn: [] // 例如 mousemove 事件的队列还没发送完毕，此时执行 mouseup 相关渲染可能会丢失部分 mousemove 数据。使用此字段指定需要等待某个behavior队列执行完毕再触发
 }
@@ -54,12 +53,12 @@ mediaStopAll  |   | 暂停所有的媒体资源（音、视频）播放
 使用  riseObserver.on(key,fn) 注册这些 behavior,例如:
 ```javascript
 riseObserver.on('setScene',function(data){
-	const key = data.content.key;
+   const key = data.content.key;
   // 课件切换到 key 对应的场景
 })
 
 riseObserver.on('mediaStopAll',function(data){
-	// 暂停所有的音视频播放
+  // 暂停所有的音视频播放
 })
 ```
 

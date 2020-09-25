@@ -46,13 +46,8 @@ function eventInit() {
       const data = {
         target: target,
         behavior: 'rollCall',
-        location: {
-          layer: 1, // 必填，当前课件的层级，课件的切换深度
-          page: 1, // 必填，当前 behavior 发生时所处的课件页码
-          scene: 1, // 必填，当前 behavior 发生时所处的是该页内第几个场景
-        },
-        event: event.type,
-        content: null
+        scene: 'page-1',
+        content: {}
       }
       // 调用 callRiseIframe 方法即可将上述数据格式同步到其他用户
       callRiseIframe(data);
@@ -68,23 +63,16 @@ function eventInit() {
   document.querySelector('.next-page').addEventListener('click', event => {
     const data = {
       target: '.next-page',
-      behavior: 'setLocation',
+      behavior: 'setScene',
       // 当前所处的是第一页
-      location: {
-        layer: 1,
-        page: 1,
-        scene: 1,
-      },
-      event: event.type,
+      scene: 'page-1',
       // 要进入第二页
       content: {
-        layer: 1,
-        page: 2,
-        scene: 1,
+        key: 'page-2'
       }
     }
     callRiseIframe(data);
-    actionFn.setLocation(data);
+    actionFn.setScene(data);
   });
   // 乌龟拖动
   document.querySelectorAll('.tt').forEach(dom => {
@@ -98,12 +86,7 @@ function eventInit() {
       const data = {
         target: `#${event.target.id}`,
         behavior: 'moveStart',
-        location: {
-          layer: 1,
-          page: 2, // 当前是处于第二页
-          scene: 1,
-        },
-        event: event.type,
+        scene: 'page-2',
         content: { left: percentageX, top: percentageY }
       }
       callRiseIframe(data);
@@ -121,12 +104,7 @@ function eventInit() {
       const data = {
         target: `#${event.target.id}`,
         behavior: 'move',
-        location: {
-          layer: 1,
-          page: 2, // 当前是处于第二页
-          scene: 1,
-        },
-        event: event.type,
+        scene: 'page-2',
         content: { left: percentageX, top: percentageY },
         // 鼠标移动事件太频繁，使用队列定时批量发送。SDK 内置了实现，只需要指定 interval = true 即可
         interval: true
@@ -139,12 +117,7 @@ function eventInit() {
     const data = {
       target: `#${event.target.id}`,
       behavior: 'moveEnd',
-      location: {
-        layer: 1,
-        page: 2, // 当前是处于第二页
-        scene: 1,
-      },
-      event: event.type,
+      scene: 'page-2',
       content: null,
       // 等待 move 队列发送完毕后再发出
       waitOn: ['move']
@@ -161,11 +134,7 @@ function eventInit() {
       callRiseIframe({
         target: `#${item.id}`, // dom 元素有 id 属性
         behavior: 'mediaPlay',
-        location: {
-          layer: 1,
-          page: 1,
-          scene: 1,
-        }
+        scene: 'page-1',
       });
     });
     // 媒体资源停止播放事件通知
@@ -173,28 +142,33 @@ function eventInit() {
       callRiseIframe({
         target: `#${item.id}`, // dom 元素有 id 属性
         behavior: 'mediaPause',
-        location: {
-          layer: 1,
-          page: 1,
-          scene: 1,
-        }
+        scene: 'page-1',
       });
     });
-    // 媒体资源停止播放事件通知
+    // 媒体资源播放进度通知SDK记录
     item.addEventListener("timeupdate", function () {
       callRiseIframe({
         target: `#${item.id}`, // dom 元素有 id 属性
         behavior: 'mediaProgress',
-        location: {
-          layer: 1,
-          page: 1,
-          scene: 1,
-        },
+        scene: 'page-1',
         content: {
           currentTime: item.currentTime
         },
+        // 正常的进度播放通知SDK无需转发同步到其他用户端，SDK只需记录最新进度
+        offline: true,
         // 暂时先使用 SDK内置的 0.1秒间隔，后续看情况再决定是否调整延迟发送间隔
         interval: true
+      });
+    });
+    // 用户手动更改媒体资源播放进度的发送信道消息通知其他用户同步
+    item.addEventListener("seeking", function () {
+      callRiseIframe({
+        target: `#${item.id}`, // dom 元素有 id 属性
+        behavior: 'mediaProgress',
+        scene: 'page-1',
+        content: {
+          currentTime: item.currentTime
+        }
       });
     });
   });
@@ -207,27 +181,31 @@ const actionFn = {
     // load 无需实现，只需要 通知 SDK 即可
   },
   // 翻页
-  setLocation(data) {
-    const toPage = data.content.page;
-    if (toPage < 1 || toPage > totalPage) {
+  setScene(data) {
+    const key = data.content.key;
+    if (!key) {
       return;
     }
-    for (let i = 1; i <= totalPage; i++) {
-      const pageDom = document.querySelector(`.page-${i}`);
-      if (pageDom) {
-        if (i === toPage) {
-          pageDom.classList.add('show');
+    document.querySelectorAll('.page').forEach((page, i) => {
+      // 目标页显示
+      if (page.classList.contains(key)) {
+        page.classList.add('show');
+        if (i === 1) {
+          // 提示信息
+          utils.setTipShow(2);
         } else {
-          pageDom.classList.remove('show');
-          // 该页下所有的音视频暂停播放
-          pageDom.querySelectorAll('audio,video').forEach(item => {
-            item.classList.remove('show');
-            item.pause();
-          });
+          utils.setTipShow(0);
         }
+      } else {
+        // 其他页隐藏
+        page.classList.remove('show');
+        // 隐藏页下所有的音视频暂停播放
+        page.querySelectorAll('audio,video').forEach(item => {
+          item.classList.remove('show');
+          item.pause();
+        });
       }
-    }
-    utils.setTipShow(toPage);
+    });
   },
   // 播放指定视频
   mediaPlay(data) {
@@ -376,21 +354,11 @@ function init() {
   callRiseIframe({
     target: `#app`,
     behavior: 'load',
-    location: {
-      layer: 1,
-      page: 1,
-      scene: 1,
-    },
-    content: { totalPage: 2, currentPage: 1 },
+    scene: 'page-1',
+    content: null,
   });
 }
 
 init();
 
-const list = [{ "target": ".tortoise-box-2", "behavior": "rollCall", "location": { "layer": 1, "page": 1, "scene": 1 }, "event": "click", "content": null, "timestamp": 1600931001940 }, { "target": ".tortoise-box-1", "behavior": "rollCall", "location": { "layer": 1, "page": 1, "scene": 1 }, "event": "click", "content": null, "timestamp": 1600931002751 }, { "target": ".tortoise-box-3", "behavior": "rollCall", "location": { "layer": 1, "page": 1, "scene": 1 }, "event": "click", "content": null, "timestamp": 1600931003724 }, { "target": "#video1", "behavior": "mediaPause", "location": { "layer": 1, "page": 1, "scene": 1 }, "timestamp": 1600931050128 }, { "target": "#video1", "behavior": "mediaPlay", "location": { "layer": 1, "page": 1, "scene": 1 }, "timestamp": 1600931199541 }, { "target": "#video1", "behavior": "mediaProgress", "location": { "layer": 1, "page": 1, "scene": 1 }, "content": { "currentTime": 63.124361 }, "interval": true, "timestamp": 1600931263052 }]
 
-// document.addEventListener('click', () => {
-//   list.forEach(item => {
-//     riseObserver.emit(item.behavior, item)
-//   });
-// });
