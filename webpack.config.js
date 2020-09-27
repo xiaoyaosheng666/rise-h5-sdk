@@ -1,6 +1,6 @@
 const path = require('path');
 
-const isModule = false;
+const isModule = true;
 
 let filename = 'index.js';
 let libraryTarget = 'umd';
