@@ -14,12 +14,11 @@ class BufferJob {
   timer = null;
   // data 是 SDK消息传输的格式
   constructor(data) {
-    const _interval = data.interval;
-    if (_interval || _interval < 0) {
+    const jobKey = getJobKey(data);
+    if (jobKey < 0) {
       throw new Error('interval 设置错误，无法创建定时任务');
     }
-    const jobKey = getJobKey(data);
-
+    // 属性 interval
     this.interval = jobKey;
     // 渲染 key
     const actionKey = getActionKey(data);
@@ -29,9 +28,12 @@ class BufferJob {
       job.bufferMap.set(actionKey, data);
       return job;
     } else {
+      // 属性 bufferMap
       this.bufferMap = new Map();
       this.bufferMap.set(actionKey, data);
+      // 属性 timer
       this.timer = setInterval(() => {
+        const bufferMap = this.bufferMap;
         if (bufferMap.size > 0) {
           bufferMap.forEach((value, key) => {
             postToRise(value);
@@ -41,7 +43,7 @@ class BufferJob {
           clearInterval(this.timer);
           jobs.delete(jobKey);
         }
-      }, interval);
+      }, this.interval);
       jobs.set(jobKey, this);
       return this;
     }

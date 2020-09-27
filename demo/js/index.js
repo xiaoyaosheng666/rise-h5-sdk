@@ -68,7 +68,9 @@ function eventInit() {
       scene: 'page-1',
       // 要进入第二页
       content: {
-        key: 'page-2'
+        key: 'page-2',
+        // 你可以传递其他参数来辅助定位更细颗粒度的显示场景
+        // num: 1
       }
     }
     callRiseIframe(data);
@@ -156,8 +158,7 @@ function eventInit() {
         },
         // 正常的进度播放通知SDK无需转发同步到其他用户端，SDK只需记录最新进度
         offline: true,
-        // 暂时先使用 SDK内置的 0.1秒间隔，后续看情况再决定是否调整延迟发送间隔
-        interval: true
+        interval: 3000
       });
     });
     // 用户手动更改媒体资源播放进度的发送信道消息通知其他用户同步
@@ -177,9 +178,6 @@ function eventInit() {
 // 渲染函数
 /// 渲染相关的动作最好抽取出来封装成 api 对外曝露，然后各个端同步的时候会调用响应的渲染API
 const actionFn = {
-  load() {
-    // load 无需实现，只需要 通知 SDK 即可
-  },
   // 翻页
   setScene(data) {
     const key = data.content.key;
@@ -360,5 +358,4 @@ function init() {
 }
 
 init();
-
 
