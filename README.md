@@ -6,16 +6,13 @@
 ```javascript
 import { riseObserver, callRiseIframe } from 'rise-h5-sdk'
 ```
-
+## 流程图
+![image](/readme/seq.png)
 
 ## 同屏关键操作：
 1. 通过 **riseObserver.on(key,fn)** 注册所有需要同步的渲染相关函数（**fn是纯粹的渲染行为函数**）
 2. 本地触发事件时，通过调用 **callRiseIframe(data)** 函数即可发送到其他用户端
 3. 其他端收到同步消息后，SDK 会调用 **riseObserver.emit(key,data)** 触发之前注册的自定义事件进行渲染
-
-#### 渲染函数说明：
-通过  riseObserver.on(key,fn) 注册的渲染函数可以 return 一个 Promise,在渲染执行完成后 resolve.
->这是为了在同步多个渲染函数时，可以确保上一个渲染函数已执行完毕再执行下一个渲染。（例如：当前渲染函数存在动画过程时，且后续渲染函数对其有依赖时就很有用）
 
 #### callRiseIframe的参数格式：
 ```javascript
@@ -23,11 +20,14 @@ import { riseObserver, callRiseIframe } from 'rise-h5-sdk'
 {
     target: '目标对象', // 必填，目标对象选择器，推荐使用 id选择器，你可以根据这个 target 识别是哪个元素
     behavior: 'key', // 必填，在  riseObserver.on(key,fn) 中注册的自定义事件名称 key
-    scene:'场景标识', // 必填，当前 behavior 发生时所处的 场景，你可以根据 scene 识别是哪个场景。要求全课件下唯一
+	// page 和 scene 大部分时候是一样的。一般当一个页面有多个场景时会不一致，scene 比 page 颗粒度更细
+    page:'页码标识', // 必填，当前 behavior 发生时所处的页码（全课件下页码唯一）。 rise 需要这个字段来对应白板的页码
+    scene:'场景标识', // 必填，当前 behavior 发生时所处的 场景，你可以根据 scene 识别是哪个场景
     content: {},   // 自定义参数内容，你可以随意定义你需要的参数， content 本身必须是个对象
     offline:false, // 表示此消息是否不需要通过 信道 发送给其他用户。默认 false，会同步给其他用户
-    interval: false, // 像鼠标移动这类事件触发太频繁，需要控制频率，否则通信过于频繁会丢失数据。SDK 内置了实现，只需要指定 interval = true 即可
-    waitOn: [] // 例如 mousemove 事件的队列还没发送完毕，此时执行 mouseup 相关渲染可能会丢失部分 mousemove 数据。使用此字段指定需要等待某个behavior队列执行完毕再触发
+    interval: 0, // 像鼠标移动这类事件触发太频繁，需要控制频率，否则通信过于频繁会丢失数据。SDK 内置了实现，只需要指定 interval = 毫秒数 即可
+    timeout:0, // 延迟执行，毫秒。当前行为需要执行的时间，下一个行为会保持和这个行为的执行间隔
+    waitOn: [] // 例如 mousemove 事件的队列还没发送完毕，此时执行 mouseup 相关渲染可能会丢失部分 mousemove 数据。使用此字段指定需要等待某个behavior队列执行完毕再触发。在 interval 有值时才有效
 }
 ```
 
@@ -35,12 +35,14 @@ import { riseObserver, callRiseIframe } from 'rise-h5-sdk'
 
 这些 behavior 是 SDK 中留做特殊用途的声明,其他渲染函数定义请避开下列保留词：
 
-- load
+- init
 - setScene
 - mediaPlay
 - mediaPause
 - mediaProgress
 - mediaStopAll
+
+> 注：另外为了保证日后 SDK 扩展不冲突，第三方也避免使用 $ 开头的 behavior
 
 ### SDK会主动发起的调用：
 需要第三方提前注册好相应的 behavior 事件，供 SDK 后续调用:
@@ -66,22 +68,30 @@ riseObserver.on('mediaStopAll',function(data){
 
 behavior  | 参数 | 说明
 ------------- | ------------- | -------------
-load | | 课件加载完成事件，课件同步的操作会在 SDK 收到 load 通知后进行
+init | | 课件初始化事件，课件同步的操作会在 SDK 收到 init 通知后进行。参考流程图
+ready | | 课件已准备就绪，可以进入正常的收发通信过程。参考流程图
 mediaPlay  |  | 媒体资源（音、视频）的播放事件
 mediaPause  |  | 媒体资源（音、视频）的播放停止事件
 mediaProgress  | {currentTime:Number}  | 媒体资源（音、视频）的播放进度事件,参数说明： currentTime:音视频的当前播放位置（以秒计）
 
-#### 1.课件加载完成通知
-需要第三方在课件加载完成后，主动发起一次 `load`   通知:
+#### 1.课件初始化完成通知
+需要第三方在课件加载完成后，主动发起一次 `init`   通知:
 ```javascript
 // 课件已加载完成，参数含义参考上方 callRiseIframe 的参数说明
 callRiseIframe({
   target: '#course', // 课件选择器
-  behavior: 'load', // 表示是课件加载完成通知
+  behavior: 'init', // 表示是课件初始化完成
+  page:'courseware1-lesson1'
   scene:'courseware1-lesson1'
   content: {}
 })
 ```
+SDK 收到 init 通知后，会推送 历史数据（如果有） 进行同步进度。过程简述如下：
+
+1. 拉取去重后的历史记录
+2. 找到最近的一个 setScene 并调用
+3. 将最近的一个 setScene 之后的消息依次推送给课件
+
 #### 2.媒体资源的播放、停止事件通知：
 当媒体资源进行播放时发起 `mediaPlay`   通知;
 当媒体资源停止播放时发起 `mediaPause`   通知;
@@ -92,7 +102,7 @@ callRiseIframe({
 
 
 ## 示例DEMO：
-联系瑞思技术人员
+请查看 /demo 目录
 
 ## 如何测试？
 多屏互动必须在瑞思提供的网址内进行，同时打开两个浏览器窗口，分别加载以下地址：

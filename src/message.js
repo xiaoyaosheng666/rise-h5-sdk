@@ -1,4 +1,5 @@
 import EventEmitter from './eventEmitter';
+import config from './config';
 
 const riseObserver = new EventEmitter();
 /**
@@ -11,7 +12,7 @@ const state = {
   // 是否已 load 事件
   isLoad: false,
   // 如果收到历史操作消息后，课件还没 load ，那需要先把历史消息挂起，等 load 后再渲染。（标准 SDK 消息）
-  historyMsg:null,
+  historyMsg: null,
   // 历史操作是否已同步
   isHistorySynchronized: false,
   // 课件是否已准备就绪：用户可以操作了
@@ -30,7 +31,7 @@ const action = {
   onLoad() {
     state.isLoad = true;
     // 检测同步课件的操作
-    if(!state.isHistorySynchronized && state.historyMsg){
+    if (!state.isHistorySynchronized && state.historyMsg) {
       action.syncHistory(state.historyMsg);
     }
     action.flushQueue();
@@ -84,7 +85,7 @@ window.addEventListener('message', function (evt) {
     return;
   }
   // 特殊的 behavior
-  if (data.behavior === '$rise-courseware-history') {
+  if (data.behavior === config.behaviors.history) {
     action.syncHistory(data);
     return;
   }
