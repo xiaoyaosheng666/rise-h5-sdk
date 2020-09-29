@@ -3,26 +3,30 @@ import config from './config';
 
 const riseObserver = new EventEmitter();
 /**
- * 接受的消息队列，ready 之前的消息先暂存到队列中，等待 ready 之后再渲染
- * SDK 收到课件的 load 时间
+ * 接受的消息队列，课件 ready 之前的消息先暂存到队列中，等待 SDK 收到课件的 ready 通知后渲染
  */
 const queue = [];
 
-const state = {
-  // 是否已 load 事件
+const courseware = {
+  // 课件是否已加载。以收到 课件的 init 通知为准
   isLoad: false,
+  // 课件是否已准备就绪：用户可以操作了.以收到 课件的 ready 通知为准
+  isReady: false,
+}
+
+const state = {
   // 如果收到历史操作消息后，课件还没 load ，那需要先把历史消息挂起，等 load 后再渲染。（标准 SDK 消息）
   historyMsg: null,
   // 历史操作是否已同步
   isHistorySynchronized: false,
-  // 课件是否已准备就绪：用户可以操作了
+  // SDK 准备就绪
   isReady: false,
 }
-Object.defineProperty(state, 'isReady', {
-  get() {
-    return state.isLoad && state.isHistorySynchronized;
-  }
-});
+// Object.defineProperty(state, 'isReady', {
+//   get() {
+//     return state.isLoad && state.isHistorySynchronized;
+//   }
+// });
 
 const action = {
   render(data) {
@@ -32,34 +36,46 @@ const action = {
     state.isLoad = true;
     // 检测同步课件的操作
     if (!state.isHistorySynchronized && state.historyMsg) {
-      action.syncHistory(state.historyMsg);
+      action.syncHistory();
     }
-    action.flushQueue();
   },
   // 同步课件的历史操作
-  syncHistory(data) {
-    // list 是 rise 存储的去重后的所有的历史操作
-    const list = data.content.list;
-    if (!list || list.length === 0) {
-      return;
-    }
+  syncHistory() {
+    // 必须要在课件 load 之后再同步
     if (!state.isLoad) {
-      state.historyMsg = data;
-      return;
+      return false;
+    }
+    // list 是 rise 存储的去重后的所有的历史操作
+    const list = state.historyMsg.content.list;
+    if (!list || list.length === 0) {
+      this.onSyncHistoryFinish();
+      return true;
     }
     const next = function (i) {
-      if (i < list.length - 1) {
-        action.render(list[i]).then(() => {
-          next(i++);
-        });
+      if (i === list.length - 1) {
+        this.onSyncHistoryFinish();
       } else {
-        state.isHistorySynchronized = true;
-        // 清空挂起的历史消息
-        state.historyMsg = null;
-        action.flushQueue();
+        const data = list[i];
+        action.render(list[i]).then(() => {
+          i++;
+          if (data.timeout) {
+            setTimeout(() => {
+              next(i);
+            }, data.timeout);
+          } else {
+            next(i);
+          }
+        });
       }
     }
     next(0);
+  },
+  // 历史同步完成
+  onSyncHistoryFinish() {
+    // 清空挂起的历史消息
+    state.historyMsg = null;
+    // 标记历史同步完成
+    state.isHistorySynchronized = true;
   },
   // 队列中的消息执行渲染
   flushQueue() {

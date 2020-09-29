@@ -36,6 +36,8 @@ import { riseObserver, callRiseIframe } from 'rise-h5-sdk'
 这些 behavior 是 SDK 中留做特殊用途的声明,其他渲染函数定义请避开下列保留词：
 
 - init
+- ready
+- reload
 - setScene
 - mediaPlay
 - mediaPause
@@ -70,6 +72,7 @@ behavior  | 参数 | 说明
 ------------- | ------------- | -------------
 init | | 课件初始化事件，课件同步的操作会在 SDK 收到 init 通知后进行。参考流程图
 ready | | 课件已准备就绪，可以进入正常的收发通信过程。参考流程图
+reload | | 刷新课件，第三方发起此行为会清空当前课件的历史行为记录
 mediaPlay  |  | 媒体资源（音、视频）的播放事件
 mediaPause  |  | 媒体资源（音、视频）的播放停止事件
 mediaProgress  | {currentTime:Number}  | 媒体资源（音、视频）的播放进度事件,参数说明： currentTime:音视频的当前播放位置（以秒计）
