@@ -51,7 +51,7 @@ import { riseObserver, callRiseIframe } from 'rise-h5-sdk'
 
 behavior  | content自定义参数 | 说明
 ------------- | ------------- | -------------
-setScene  | { key:String }  | 控制切换到指定场景，参数说明：key 场景标识，一般来自于 callRiseIframe 中参数 scene.
+setScene  |  | 控制切换到指定场景，一般在同步最新进度时 SDK 会主动将历史消息中最近的一次 behavior = setScene  的发给课件
 mediaStopAll  |   | 暂停所有的媒体资源（音、视频）播放
 
 使用  riseObserver.on(key,fn) 注册这些 behavior,例如:
@@ -72,7 +72,6 @@ behavior  | 参数 | 说明
 ------------- | ------------- | -------------
 init | | 课件初始化事件，课件同步的操作会在 SDK 收到 init 通知后进行。参考流程图
 ready | | 课件已准备就绪，可以进入正常的收发通信过程。参考流程图
-reload | | 刷新课件，第三方发起此行为会清空当前课件的历史行为记录
 mediaPlay  |  | 媒体资源（音、视频）的播放事件
 mediaPause  |  | 媒体资源（音、视频）的播放停止事件
 mediaProgress  | {currentTime:Number}  | 媒体资源（音、视频）的播放进度事件,参数说明： currentTime:音视频的当前播放位置（以秒计）
@@ -84,8 +83,8 @@ mediaProgress  | {currentTime:Number}  | 媒体资源（音、视频）的播放
 callRiseIframe({
   target: '#course', // 课件选择器
   behavior: 'init', // 表示是课件初始化完成
-  page:'courseware1-lesson1'
-  scene:'courseware1-lesson1'
+  page:'courseware1-lesson1',
+  scene:'courseware1-lesson1',
   content: {}
 })
 ```

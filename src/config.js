@@ -3,6 +3,12 @@ export default {
   interval: 100,
   // 特殊的 behavior
   behaviors: {
-    history: '$rise_history'
+    // rise 同步历史
+    history: '$rise_history',
+    // 课件的 load
+    load: 'init',
+    ready: 'ready',
+    // 场景切换
+    setScene: 'setScene'
   }
 }

@@ -1,7 +1,7 @@
 const riseObserver = window.riseObserver;
 const callRiseIframe = window.callRiseIframe;
 
-const totalPage = 2; // 课件总页数
+// const totalPage = 2; // 课件总页数
 
 // 当前拖动状态信息
 const dragInfo = {
@@ -46,6 +46,7 @@ function eventInit() {
       const data = {
         target: target,
         behavior: 'rollCall',
+        page: 'page-1',
         scene: 'page-1',
         content: {}
       }
@@ -65,6 +66,7 @@ function eventInit() {
       target: '.next-page',
       behavior: 'setScene',
       // 当前所处的是第一页
+      page: 'page-1',
       scene: 'page-1',
       // 要进入第二页
       content: {
@@ -88,6 +90,7 @@ function eventInit() {
       const data = {
         target: `#${event.target.id}`,
         behavior: 'moveStart',
+        page: 'page-2',
         scene: 'page-2',
         content: { left: percentageX, top: percentageY }
       }
@@ -106,6 +109,7 @@ function eventInit() {
       const data = {
         target: `#${event.target.id}`,
         behavior: 'move',
+        page: 'page-2',
         scene: 'page-2',
         content: { left: percentageX, top: percentageY },
         // 鼠标移动事件太频繁，使用队列定时批量发送。SDK 内置了实现，只需要指定 interval = true 即可
@@ -119,6 +123,7 @@ function eventInit() {
     const data = {
       target: `#${event.target.id}`,
       behavior: 'moveEnd',
+      page: 'page-2',
       scene: 'page-2',
       content: null,
       // 等待 move 队列发送完毕后再发出
@@ -136,6 +141,7 @@ function eventInit() {
       callRiseIframe({
         target: `#${item.id}`, // dom 元素有 id 属性
         behavior: 'mediaPlay',
+        page: 'page-1',
         scene: 'page-1',
       });
     });
@@ -144,6 +150,7 @@ function eventInit() {
       callRiseIframe({
         target: `#${item.id}`, // dom 元素有 id 属性
         behavior: 'mediaPause',
+        page: 'page-1',
         scene: 'page-1',
       });
     });
@@ -152,6 +159,7 @@ function eventInit() {
       callRiseIframe({
         target: `#${item.id}`, // dom 元素有 id 属性
         behavior: 'mediaProgress',
+        page: 'page-1',
         scene: 'page-1',
         content: {
           currentTime: item.currentTime
@@ -166,6 +174,7 @@ function eventInit() {
       callRiseIframe({
         target: `#${item.id}`, // dom 元素有 id 属性
         behavior: 'mediaProgress',
+        page: 'page-1',
         scene: 'page-1',
         content: {
           currentTime: item.currentTime
@@ -178,6 +187,16 @@ function eventInit() {
 // 渲染函数
 /// 渲染相关的动作最好抽取出来封装成 api 对外曝露，然后各个端同步的时候会调用响应的渲染API
 const actionFn = {
+  ready() {
+    // 收到 SDK ready 通知
+
+    // do something...
+
+    // 通知 SDK 课件已 ready
+    callRiseIframe({
+      behavior: 'ready'
+    });
+  },
   // 翻页
   setScene(data) {
     const key = data.content.key;
@@ -351,7 +370,8 @@ function init() {
   // 课件加载完成通知
   callRiseIframe({
     target: `#app`,
-    behavior: 'load',
+    behavior: 'init',
+    page: 'page-1',
     scene: 'page-1',
     content: null,
   });
