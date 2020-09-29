@@ -31,11 +31,13 @@ const action = {
     return riseObserver.emit(data.behavior, data);
   },
   onLoad() {
+    console.log('SDK:课件 init');
     state.isLoad = true;
-    this.setScene();
+    action.setScene();
   },
   // 如果有 setScene ，则会通知课件设置场景
   setScene() {
+    console.log('SDK:setScene');
     if (!state.historyMsg) {
       // 如果还没收到历史消息，稍后再询问执行
       setTimeout(() => {
@@ -56,10 +58,11 @@ const action = {
       }
     }
 
-    this.onReady();
+    action.onReady();
   },
   // SDK Ready
   onReady() {
+    console.log('SDK:ready');
     state.isReady = true;
     // sdk ready 通知
     action.render({
@@ -68,11 +71,13 @@ const action = {
   },
   // 课件 Ready
   onCoursewareReady() {
+    console.log('SDK:课件 ready');
     courseware.isReady = true;
-    this.syncHistory();
+    action.syncHistory();
   },
   // 同步课件的历史行为
   syncHistory() {
+    console.log('SDK:历史同步');
     // 要在课件 ready 之后
     if (!courseware.isReady) {
       return false;
@@ -80,7 +85,7 @@ const action = {
     // list 是 rise 存储的去重后的所有的历史操作
     const list = state.historyMsg.content.list;
     if (!list || list.length === 0) {
-      this.onSyncHistoryFinish();
+      action.onSyncHistoryFinish();
       return true;
     }
     // 历史行为中最近的 setScene
@@ -96,27 +101,27 @@ const action = {
     const next = function (i) {
       if (i === renderList.length) {
         // 同步完成
-        this.onSyncHistoryFinish();
+        action.onSyncHistoryFinish();
       } else {
         const data = renderList[i];
         // 依次渲染
-        action.render(data).then(() => {
-          i++;
-          if (data.timeout) {
-            // 如果当前行为设置了执行消耗时间，那下一个行为要等待此间隔
-            setTimeout(() => {
-              next(i);
-            }, data.timeout);
-          } else {
+        action.render(data);
+        i++;
+        if (data.timeout) {
+          // 如果当前行为设置了执行消耗时间，那下一个行为要等待此间隔
+          setTimeout(() => {
             next(i);
-          }
-        });
+          }, data.timeout);
+        } else {
+          next(i);
+        }
       }
     }
     next(0);
   },
   // 历史同步完成
   onSyncHistoryFinish() {
+    console.log('SDK:历史同步完成');
     // 清空挂起的历史消息
     state.historyMsg = null;
     // 标记历史同步完成
@@ -126,6 +131,7 @@ const action = {
   },
   // 队列中的消息执行渲染
   flushQueue() {
+    console.log('SDK:队列执行');
     if (state.isHistorySynchronized) {
       while (queue.length > 0) {
         action.render(queue[0]);
@@ -147,6 +153,7 @@ window.addEventListener('message', function (evt) {
   if (!data || !data.behavior) {
     return;
   }
+  console.log('SDK:message', data);
   // 特殊的 behavior
   if (data.behavior === config.behaviors.history) {
     state.historyMsg = data;
