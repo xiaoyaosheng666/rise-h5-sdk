@@ -9,6 +9,8 @@ export default {
     load: 'init',
     ready: 'ready',
     // 场景切换
-    setScene: 'setScene'
+    setScene: 'setScene',
+    // 媒体相关
+    mediaProgress:'mediaProgress'
   }
 }

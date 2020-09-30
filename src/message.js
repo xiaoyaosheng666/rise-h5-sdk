@@ -6,6 +6,8 @@ const riseObserver = new EventEmitter();
  * 接受的消息队列，课件 ready 之前的消息先暂存到队列中，等待 SDK 收到课件的 ready 通知后渲染
  */
 const queue = [];
+// mediaProgress behavior 最新进度记录，用来规避无限重复互发
+const mediaProgressMap = new Map();
 
 // 课件状态
 const courseware = {
@@ -138,6 +140,17 @@ const action = {
         queue.splice(0, 1);
       }
     }
+  },
+  // 媒体进度 behavior
+  onMediaProgressBehavior(data) {
+    const key = data.target;
+    const value = mediaProgressMap.get(key);
+    const currentTime = data.content.currentTime;
+    if (value && Math.abs(currentTime - value) < 3) {
+      // 这是个重复发送的消息，标记为停止转发
+      data.offline = true;
+    }
+    mediaProgressMap.set(key, currentTime);
   }
 }
 
@@ -158,7 +171,7 @@ window.addEventListener('message', function (evt) {
   if (data.behavior === config.behaviors.history) {
     state.historyMsg = data;
     return;
-  }
+  } 
   // 如果历史同步已经完成 ，则直接渲染。否则加入队列等待渲染
   if (state.isHistorySynchronized) {
     action.render(data);
@@ -180,11 +193,16 @@ function postToRise(data) {
   }
   console.log('sdk data:', data);
   // 特殊的 behavior
-  if (data.behavior === config.behaviors.load) {
-    action.onLoad();
-  } else if (data.behavior === config.behaviors.ready) {
+  if (data.behavior === config.behaviors.ready) {
     action.onCoursewareReady();
   } else {
+    if (data.behavior === config.behaviors.load) {
+      // 课件 load 无需转发给其他端
+      data.offline = true;
+      action.onLoad();
+    } else if (data.behavior === config.behaviors.mediaProgress) {
+      action.onMediaProgressBehavior(data);
+    }
     window.parent.postMessage && window.parent.postMessage(data, '*');
   }
 }
