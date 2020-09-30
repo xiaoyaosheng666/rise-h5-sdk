@@ -3,6 +3,8 @@ export default {
   interval: 100,
   // 特殊的 behavior
   behaviors: {
+    // sdk init，直播教室会通过此行为传递用户数据
+    sdkInit: '$sdk_init',
     // rise 同步历史
     history: '$rise_history',
     // 课件的 load
@@ -11,6 +13,6 @@ export default {
     // 场景切换
     setScene: 'setScene',
     // 媒体相关
-    mediaProgress:'mediaProgress'
+    mediaProgress: 'mediaProgress',
   }
 }

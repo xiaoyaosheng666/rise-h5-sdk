@@ -1,6 +1,7 @@
 import { postToRise, riseObserver } from './message';
 import BufferJob from './bufferJob';
 import waitOn from './waitOn';
+import store from './store';
 
 
 const callRiseIframe = function (data) {
@@ -15,8 +16,13 @@ const callRiseIframe = function (data) {
     postToRise(data);
   }
 };
+// 获取 rise 用户信息
+function getRiseUserInfo() {
+  return store.user;
+}
 
 export {
   riseObserver,
-  callRiseIframe
+  callRiseIframe,
+  getRiseUserInfo
 }

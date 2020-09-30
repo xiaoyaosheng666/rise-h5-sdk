@@ -11,6 +11,11 @@ const dragInfo = {
   currentDragSelector: ''
 }
 
+const state = {
+  // 视频进度同步禁用
+  seekingDisabled: false
+}
+
 // 方法封装
 const utils = {
   // px 转成 百分比。多个屏幕间显示尺寸大小不一致时，可保持效果一致
@@ -171,15 +176,18 @@ function eventInit() {
     });
     // 用户手动更改媒体资源播放进度的发送信道消息通知其他用户同步
     item.addEventListener("seeking", function () {
-      callRiseIframe({
-        target: `#${item.id}`, // dom 元素有 id 属性
-        behavior: 'mediaProgress',
-        page: 'page-1',
-        scene: 'page-1',
-        content: {
-          currentTime: item.currentTime
-        }
-      });
+      if (!state.seekingDisabled) {
+        callRiseIframe({
+          target: `#${item.id}`, // dom 元素有 id 属性
+          behavior: 'mediaProgress',
+          page: 'page-1',
+          scene: 'page-1',
+          content: {
+            currentTime: item.currentTime
+          },
+        });
+      }
+      state.seekingDisabled = false;
     });
   });
 }
@@ -252,7 +260,9 @@ const actionFn = {
     }
     const currentTime = data.content.currentTime;
     if (currentTime) {
+      // 设置 currentTime 会触发 seeking 事件，这个不应该同步出去
       target.currentTime = currentTime;
+      state.seekingDisabled = true;
     }
   },
   // 停止所有的音视频播放

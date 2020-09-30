@@ -1,5 +1,7 @@
 import EventEmitter from './eventEmitter';
 import config from './config';
+import { mutations } from './store';
+import log from './log';
 
 const riseObserver = new EventEmitter();
 /**
@@ -33,13 +35,12 @@ const action = {
     return riseObserver.emit(data.behavior, data);
   },
   onLoad() {
-    console.log('SDK:课件 init');
+    log('课件 init');
     state.isLoad = true;
     action.setScene();
   },
   // 如果有 setScene ，则会通知课件设置场景
   setScene() {
-    console.log('SDK:setScene');
     if (!state.historyMsg) {
       // 如果还没收到历史消息，稍后再询问执行
       setTimeout(() => {
@@ -56,6 +57,7 @@ const action = {
         const lastScene = scenes[scenes.length - 1];
         // 记录到 state 上，后面的历史行为同步函数会用到
         state.lastScene = lastScene;
+        log('setScene', lastScene);
         action.render(lastScene);
       }
     }
@@ -64,7 +66,7 @@ const action = {
   },
   // SDK Ready
   onReady() {
-    console.log('SDK:ready');
+    log('SDK ready');
     state.isReady = true;
     // sdk ready 通知
     action.render({
@@ -73,13 +75,12 @@ const action = {
   },
   // 课件 Ready
   onCoursewareReady() {
-    console.log('SDK:课件 ready');
+    log('课件 ready');
     courseware.isReady = true;
     action.syncHistory();
   },
   // 同步课件的历史行为
   syncHistory() {
-    console.log('SDK:历史同步');
     // 要在课件 ready 之后
     if (!courseware.isReady) {
       return false;
@@ -99,6 +100,7 @@ const action = {
     } else {
       renderList = list;
     }
+    log('历史同步', renderList);
     // 依次渲染
     const next = function (i) {
       if (i === renderList.length) {
@@ -123,7 +125,7 @@ const action = {
   },
   // 历史同步完成
   onSyncHistoryFinish() {
-    console.log('SDK:历史同步完成');
+    log('历史同步完成');
     // 清空挂起的历史消息
     state.historyMsg = null;
     // 标记历史同步完成
@@ -133,7 +135,7 @@ const action = {
   },
   // 队列中的消息执行渲染
   flushQueue() {
-    console.log('SDK:队列执行');
+    log('队列执行', queue.length);
     if (state.isHistorySynchronized) {
       while (queue.length > 0) {
         action.render(queue[0]);
@@ -166,12 +168,17 @@ window.addEventListener('message', function (evt) {
   if (!data || !data.behavior) {
     return;
   }
-  console.log('SDK:message', data);
+  log('message', data);
   // 特殊的 behavior
   if (data.behavior === config.behaviors.history) {
+    // 历史数据
     state.historyMsg = data;
     return;
-  } 
+  } else if (data.behavior === config.behaviors.sdkInit) {
+    // 初始化数据
+    mutations.setUser(data.content);
+    return;
+  }
   // 如果历史同步已经完成 ，则直接渲染。否则加入队列等待渲染
   if (state.isHistorySynchronized) {
     action.render(data);
@@ -191,11 +198,11 @@ function postToRise(data) {
   if (!data || !data.behavior) {
     return;
   }
-  console.log('sdk data:', data);
   // 特殊的 behavior
   if (data.behavior === config.behaviors.ready) {
     action.onCoursewareReady();
   } else {
+    log('send', data);
     if (data.behavior === config.behaviors.load) {
       // 课件 load 无需转发给其他端
       data.offline = true;
