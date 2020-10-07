@@ -179,8 +179,8 @@ window.addEventListener('message', function (evt) {
     mutations.setUser(data.content);
     return;
   }
-  // 如果历史同步已经完成 ，则直接渲染。否则加入队列等待渲染
-  if (state.isHistorySynchronized) {
+  // 如果历史同步已经完成 ，则直接渲染。否则加入队列等待渲染（setScene 除外，不做任何限制）
+  if (state.isHistorySynchronized || data.behavior === config.behaviors.setScene) {
     action.render(data);
   } else {
     queue.push(data);
