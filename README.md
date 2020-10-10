@@ -8,6 +8,7 @@ import { riseObserver, callRiseIframe } from 'rise-h5-sdk'
 ```
 ## 流程图
 ![image](/readme/seq.png)
+> 注：behavior = setScene 的消息 SDK 不会做限制，即时发送。
 
 ## 同屏关键操作：
 1. 通过 **riseObserver.on(key,fn)** 注册所有需要同步的渲染相关函数（**fn是纯粹的渲染行为函数**）
