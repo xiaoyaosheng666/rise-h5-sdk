@@ -1,10 +1,10 @@
 # rise 课件对接说明
 
-引入 `rise-h5-sdk.js` ，即可使用 window.riseObserver 对象和 window.callRiseIframe 函数
+引入 `rise-h5-sdk.js` ，即可使用 window.riseObserver 对象和 window.callRiseIframe、window.getRiseUserInfo 函数
 
 或者使用:   `npm install rise-h5-sdk --save`
 ```javascript
-import { riseObserver, callRiseIframe } from 'rise-h5-sdk'
+import { riseObserver, callRiseIframe, getRiseUserInfo } from 'rise-h5-sdk'
 ```
 ## 流程图
 ![image](/readme/seq.png)
@@ -31,6 +31,15 @@ import { riseObserver, callRiseIframe } from 'rise-h5-sdk'
     waitOn: [] // 例如 mousemove 事件的队列还没发送完毕，此时执行 mouseup 相关渲染可能会丢失部分 mousemove 数据。使用此字段指定需要等待某个behavior队列执行完毕再触发。在 interval 有值时才有效
 }
 ```
+#### getRiseUserInfo 函数
+```javascript
+// 获取当前用户信息
+const userInfo = getRiseUserInfo();
+// 返回值
+{
+    isTeacher: false, // 是否是老师
+}
+```
 
 ## 特定的 behavior：
 
@@ -38,7 +47,6 @@ import { riseObserver, callRiseIframe } from 'rise-h5-sdk'
 
 - init
 - ready
-- reload
 - setScene
 - mediaPlay
 - mediaPause

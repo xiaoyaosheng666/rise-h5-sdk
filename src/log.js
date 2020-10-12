@@ -5,7 +5,9 @@ function log(mess, ...args) {
   } else {
     console.log(`%c SDK:${JSON.stringify(mess)}`, 'color:green');
   }
-  console.log(args);
+  if(args.length > 0){
+    console.log(...args);
+  }
 }
 
 export default log;

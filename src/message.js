@@ -41,8 +41,8 @@ const action = {
   },
   // 如果有 setScene ，则会通知课件设置场景
   setScene() {
+    // 如果还没收到历史消息，稍后再询问执行。本函数的执行一定是在获取到历史消息后
     if (!state.historyMsg) {
-      // 如果还没收到历史消息，稍后再询问执行
       setTimeout(() => {
         action.setScene();
       }, 50);
@@ -86,7 +86,7 @@ const action = {
       return false;
     }
     // list 是 rise 存储的去重后的所有的历史操作
-    const list = state.historyMsg.content.list;
+    const list = state.historyMsg ? state.historyMsg.content.list : [];
     if (!list || list.length === 0) {
       action.onSyncHistoryFinish();
       return true;
@@ -200,6 +200,7 @@ function postToRise(data) {
   }
   // 特殊的 behavior
   if (data.behavior === config.behaviors.ready) {
+    // 课件 ready 不需要发送出去
     action.onCoursewareReady();
   } else {
     log('send', data);
