@@ -52,6 +52,7 @@ const userInfo = getRiseUserInfo();
 - mediaPause
 - mediaProgress
 - mediaStopAll
+- $setUrl
 
 > 注：另外为了保证日后 SDK 扩展不冲突，第三方也避免使用 $ 开头的 behavior
 
@@ -77,13 +78,14 @@ riseObserver.on('mediaStopAll',function(data){
 
 ### 需要第三方主动发起的调用:
 
-behavior  | 参数 | 说明
+behavior  | 参数（放在 content 上） | 说明
 ------------- | ------------- | -------------
 init | | 课件初始化事件，课件同步的操作会在 SDK 收到 init 通知后进行。参考流程图
 ready | | 课件已准备就绪，可以进入正常的收发通信过程。参考流程图
 mediaPlay  |  | 媒体资源（音、视频）的播放事件
 mediaPause  |  | 媒体资源（音、视频）的播放停止事件
 mediaProgress  | {currentTime:Number}  | 媒体资源（音、视频）的播放进度事件,参数说明： currentTime:音视频的当前播放位置（以秒计）
+$setUrl  | {url:String}  | 改变课件所属 iframe 的 src 地址。一般用于切换到另一个课件
 
 #### 1.课件初始化完成通知
 需要第三方在课件加载完成后，主动发起一次 `init`   通知:

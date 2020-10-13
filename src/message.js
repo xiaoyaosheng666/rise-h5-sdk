@@ -11,14 +11,6 @@ const queue = [];
 // mediaProgress behavior 最新进度记录，用来规避无限重复互发
 const mediaProgressMap = new Map();
 
-// 课件状态
-const courseware = {
-  // 课件是否已加载。以收到 课件的 init 通知为准
-  isLoad: false,
-  // 课件是否已准备就绪：用户可以操作了.以收到 课件的 ready 通知为准
-  isReady: false,
-}
-
 const state = {
   // 如果收到历史操作消息后，课件还没 load ，那需要先把历史消息挂起，等 load 后再渲染。（标准 SDK 消息）
   historyMsg: null,
@@ -27,8 +19,12 @@ const state = {
   // 历史操作是否已同步
   isHistorySynchronized: false,
   // SDK 准备就绪
-  isReady: false
-}
+  isReady: false,
+  // 课件是否已加载。以收到 课件的 init 通知为准
+  cwIsLoad: false,
+  // 课件是否已准备就绪：用户可以操作了.以收到 课件的 ready 通知为准
+  cwIsReady: false,
+};
 
 const action = {
   render(data) {
@@ -36,8 +32,14 @@ const action = {
   },
   onLoad() {
     log('课件 init');
-    state.isLoad = true;
-    action.setScene();
+    // state 重新初始化
+    state.historyMsg = null;
+    state.lastScene = null;
+    state.isHistorySynchronized = false;
+    state.isReady = false;
+    state.cwIsReady = false;
+    // 课件标记已加载。教室收到课件已加载通知后，会推送历史消息
+    state.cwIsLoad = true;
   },
   // 如果有 setScene ，则会通知课件设置场景
   setScene() {
@@ -70,21 +72,18 @@ const action = {
     state.isReady = true;
     // sdk ready 通知
     action.render({
+      target: 'SDK',
       behavior: config.behaviors.ready
     });
   },
   // 课件 Ready
   onCoursewareReady() {
     log('课件 ready');
-    courseware.isReady = true;
+    state.cwIsReady = true;
     action.syncHistory();
   },
   // 同步课件的历史行为
   syncHistory() {
-    // 要在课件 ready 之后
-    if (!courseware.isReady) {
-      return false;
-    }
     // list 是 rise 存储的去重后的所有的历史操作
     const list = state.historyMsg ? state.historyMsg.content.list : [];
     if (!list || list.length === 0) {
@@ -96,6 +95,7 @@ const action = {
     // 要渲染的行为
     let renderList = null;
     if (lastScene) {
+      // 如果存在 lastScene ，那么只取 lastScene 之后的行为渲染
       renderList = list.filter(p => p.timestamp > lastScene.timestamp);
     } else {
       renderList = list;
@@ -173,6 +173,7 @@ window.addEventListener('message', function (evt) {
   if (data.behavior === config.behaviors.history) {
     // 历史数据
     state.historyMsg = data;
+    action.setScene();
     return;
   } else if (data.behavior === config.behaviors.sdkInit) {
     // 初始化数据

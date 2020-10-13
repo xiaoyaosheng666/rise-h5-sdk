@@ -1,15 +1,18 @@
 const path = require('path');
+const package = require('./package.json');
 
 const isModule = false;
 
-let filename = 'index.js';
-let libraryTarget = 'umd';
+let filename = '';
+let libraryTarget = '';
 
 if (isModule) {
   // 模块化
+  filename = 'index.js';
+  libraryTarget = 'umd';
 } else {
   // 浏览器环境
-  filename = 'rise-h5-sdk.js';
+  filename = `${package.name}.js`;
   libraryTarget = 'window';
 }
 
