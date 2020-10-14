@@ -1,5 +1,6 @@
 const path = require('path');
 const package = require('./package.json');
+const webpack = require('webpack');
 
 const isModule = false;
 
@@ -38,5 +39,11 @@ module.exports = {
         }
       }
     ]
-  }
+  },
+  plugins: [
+    // 编译时(compile time)插件
+    new webpack.DefinePlugin({
+      'process.env.version': JSON.stringify(package.version),
+    }),
+  ]
 };

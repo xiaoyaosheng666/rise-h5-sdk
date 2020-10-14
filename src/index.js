@@ -3,6 +3,9 @@ import BufferJob from './bufferJob';
 import waitOn from './waitOn';
 import store from './store';
 
+const version = process.env.version;
+
+console.log('SDK Version:', version);
 
 const callRiseIframe = function (data) {
   if (data.interval) {
