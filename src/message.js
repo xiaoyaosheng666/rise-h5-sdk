@@ -2,16 +2,17 @@ import EventEmitter from './eventEmitter';
 import config from './config';
 import { mutations } from './store';
 import log from './log';
+import MouseTrack from './mouseTrack';
 
 const riseObserver = new EventEmitter();
 /**
  * 接受的消息队列，课件 ready 之前的消息先暂存到队列中，等待 SDK 收到课件的 ready 通知后渲染
  */
 const queue = [];
-// mediaProgress behavior 最新进度记录，用来规避无限重复互发
-const mediaProgressMap = new Map();
 
 const state = {
+  // 鼠标轨迹实例对象
+  mouseTrack: null,
   // 如果收到历史操作消息后，课件还没 load ，那需要先把历史消息挂起，等 load 后再渲染。（标准 SDK 消息）
   historyMsg: null,
   // 从历史行为中取的最近的一次 setScene 行为
@@ -81,6 +82,8 @@ const action = {
     log('课件 ready');
     state.cwIsReady = true;
     action.syncHistory();
+    // 鼠标轨迹行为，此时已有 用户信息
+    state.mouseTrack = new MouseTrack();
   },
   // 同步课件的历史行为
   syncHistory() {
@@ -142,17 +145,6 @@ const action = {
         queue.splice(0, 1);
       }
     }
-  },
-  // 媒体进度 behavior
-  onMediaProgressBehavior(data) {
-    const key = data.target;
-    const value = mediaProgressMap.get(key);
-    const currentTime = data.content.currentTime;
-    if (value && Math.abs(currentTime - value) < 3) {
-      // 这是个重复发送的消息，标记为停止转发
-      data.offline = true;
-    }
-    mediaProgressMap.set(key, currentTime);
   }
 }
 
@@ -168,18 +160,30 @@ window.addEventListener('message', function (evt) {
   if (!data || !data.behavior) {
     return;
   }
-  log('message', data);
+  // log('message', data);
   // 特殊的 behavior
   if (data.behavior === config.behaviors.history) {
     // 历史数据
     state.historyMsg = data;
     action.setScene();
     return;
-  } else if (data.behavior === config.behaviors.sdkInit) {
-    // 初始化数据
-    mutations.setUser(data.content);
+  } 
+  if (data.behavior === config.behaviors.sdkInit) {
+    const newUserValue = data.content;
+    // state 数据设置
+    mutations.setUser(newUserValue);
+    // 相关参数变更了后重新初始化
+    if (state.mouseTrack !== null) {
+      state.mouseTrack.check();
+    }
+    return;
+  } 
+  if (data.behavior === config.behaviors.mouseTrack) {
+    const { x, y } = data.content;
+    state.mouseTrack.move(x, y);
     return;
   }
+  
   // 如果历史同步已经完成 ，则直接渲染。否则加入队列等待渲染（setScene 除外，不做任何限制）
   if (state.isHistorySynchronized || data.behavior === config.behaviors.setScene) {
     action.render(data);
@@ -204,13 +208,11 @@ function postToRise(data) {
     // 课件 ready 不需要发送出去
     action.onCoursewareReady();
   } else {
-    log('send', data);
+    // log('send', data);
     if (data.behavior === config.behaviors.load) {
       // 课件 load 无需转发给其他端
       data.offline = true;
       action.onLoad();
-    } else if (data.behavior === config.behaviors.mediaProgress) {
-      action.onMediaProgressBehavior(data);
     }
     window.parent.postMessage && window.parent.postMessage(data, '*');
   }

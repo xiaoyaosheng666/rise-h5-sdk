@@ -10,6 +10,14 @@ import { riseObserver, callRiseIframe, getRiseUserInfo } from 'rise-h5-sdk'
 ![image](/readme/seq.png)
 > 注：behavior = setScene 的消息 SDK 不会做限制，即时发送。
 
+#### 流程说明
+1. 课件加载后发送 init 消息
+2. SDK 会拉取历史消息，从历史消息中取最近的一次 behavior = setScene 的消息推给课件，没有则不推送
+3. SDK 发送 ready 消息
+4. 课件收到 SDK ready 后，回发一个 ready
+5. SDK收到课件的 ready 后，会依次推送去重后的历史消息给课件。（如果有第2步的 setScene 则这里会过滤只推送 setScene 时间点后的消息）
+6. 进入正常的收发消息阶段
+
 ## 同屏关键操作：
 1. 通过 **riseObserver.on(key,fn)** 注册所有需要同步的渲染相关函数（**fn是纯粹的渲染行为函数**）
 2. 本地触发事件时，通过调用 **callRiseIframe(data)** 函数即可发送到其他用户端
@@ -38,6 +46,7 @@ const userInfo = getRiseUserInfo();
 // 返回值
 {
     isTeacher: false, // 是否是老师
+	hasControl: false, // 当前用户是否对课件有控制权。注意：此字段会动态变化，所以课件方使用时，需实时调用 getRiseUserInfo() 函数获取
 }
 ```
 

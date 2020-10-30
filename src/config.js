@@ -13,6 +13,6 @@ export default {
     // 场景切换
     setScene: 'setScene',
     // 媒体相关
-    mediaProgress: 'mediaProgress',
+    mouseTrack: '$cw_mouseTrack',
   }
 }
