@@ -2,6 +2,6 @@ Courseware->SDK: init
 SDK-->Courseware: setScene (if exists)
 SDK->Courseware: ready
 Courseware->SDK: ready
-SDK->Courseware:historical messages
-Note right of SDK: if setScene exists,\nfilter the historical message after it
+SDK->Courseware:history messages
+Note right of SDK: if setScene exists,SDK will filter \nthe history message before it
 Courseware<->SDK:message
