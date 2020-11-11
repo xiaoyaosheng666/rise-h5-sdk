@@ -166,6 +166,8 @@ window.addEventListener('message', function (evt) {
     // 历史数据
     state.historyMsg = data;
     action.setScene();
+    // 课件方想收到此消息，根据此消息长度判断是否是重连。建议课件方过滤 $ 开头的消息
+    action.render(data);
     return;
   } 
   if (data.behavior === config.behaviors.sdkInit) {

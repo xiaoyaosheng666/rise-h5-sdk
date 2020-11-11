@@ -45,8 +45,8 @@ import { riseObserver, callRiseIframe, getRiseUserInfo } from 'rise-h5-sdk'
 const userInfo = getRiseUserInfo();
 // 返回值
 {
-    isTeacher: false, // 是否是老师
-	hasControl: false, // 当前用户是否对课件有控制权。注意：此字段会动态变化，所以课件方使用时，需实时调用 getRiseUserInfo() 函数获取
+  isTeacher: false, // 是否是老师
+  hasControl: false, // 当前用户是否对课件有控制权。注意：此字段会动态变化，所以课件方使用时，需实时调用 getRiseUserInfo() 函数获取
 }
 ```
 
@@ -114,16 +114,17 @@ SDK 收到 init 通知后，会推送 历史数据（如果有） 进行同步�
 3. 将最近的一个 setScene 之后的消息依次推送给课件
 
 #### 2.媒体资源的播放、停止事件通知：
-当媒体资源进行播放时发起 `mediaPlay`   通知;
-当媒体资源停止播放时发起 `mediaPause`   通知;
-当媒体资源的播放进度变更时候发起  `mediaProgress`   通知（为了防止频繁通知，暂定3秒发起一次通知）;
+当媒体资源进行播放时发起 `mediaPlay`   通知;  
+当媒体资源停止播放时发起 `mediaPause`   通知;  
+当媒体资源的播放进度变更时候发起  `mediaProgress`   通知（为了防止频繁通知，暂定3秒发起一次通知）;  
+
 > `mediaProgress` 事件需要关注 offline 参数，如果是正常的进度播放，offline 应设为 true（消息不再转发给其他用户，因为各用户端都在正常播放）。如果是用户手动变更了播放进度，offline 应为 false（消息应该转发给其他用户，同步进度）
 
 注：媒体资源 rise 会在直播教室做特殊处理，所以需要按照上述约定的命名 behavior，在限定了 behavior 命名的情况下，第三方可根据 target 自行识别元素目标
 
 
 ## 示例DEMO：
-请查看 /demo 目录
+请查看 /demo 目录，或联系 RISE 提供。
 
 ## 如何测试？
 多屏互动必须在瑞思提供的网址内进行，同时打开两个浏览器窗口，分别加载以下地址：
@@ -133,6 +134,6 @@ SDK 收到 init 通知后，会推送 历史数据（如果有） 进行同步�
 使用瑞思提供的账号登录后进入直播间
 
 
-默认打开的是瑞思提供的示例DEMO：在其中一个窗口的课件进行操作，另一个窗口的课件会自动同步对应的操作。
+联系RISE获取Demo课件在线地址，在右上方的输入框输入，点击 confirm：在其中一个窗口的课件进行操作，另一个窗口的课件会自动同步对应的操作。
 
 你也可以在右上方的输入框输入你的本地网址进行调式

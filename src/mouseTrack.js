@@ -41,7 +41,7 @@ class MouseTrack {
 
   init() {
     // 必须要使用课件的 canvas ，直接在 document.body 上监听是收不到事件响应的，似乎是被 cocos 阻止事件冒泡了
-    this.container = document.getElementById('GameCanvas') || document.querySelector('canvas');
+    this.container = document.getElementById('GameCanvas') || document.querySelector('canvas') || document.body;
     this.interval = store.user && store.user.interval ? store.user.interval : 300;
     // 先清除，这样就可以重复 new 不影响了
     this.clean();
@@ -97,9 +97,9 @@ class MouseTrack {
   clean() {
     const target = document.getElementById(domId);
     if (target) {
-      document.body.style.cursor = null;
+      this.container.style.cursor = null;
       document.body.removeChild(target);
-      this.container.removeEventListener('mousemove', this.onMouseMove);
+      this.disable();
     }
   }
   // 启用鼠标轨迹发送
@@ -118,7 +118,7 @@ class MouseTrack {
   check() {
     if (this.enableMouseTrack) {
       // 隐藏系统鼠标样式
-      document.body.style.cursor = 'none';
+      this.container.style.cursor = 'none';
       if (this.hasControl) {
         this.enable();
       } else {
@@ -126,7 +126,7 @@ class MouseTrack {
       }
     } else {
       // 恢复系统鼠标样式
-      document.body.style.cursor = null;
+      this.container.style.cursor = null;
       this.disable();
     }
   }
