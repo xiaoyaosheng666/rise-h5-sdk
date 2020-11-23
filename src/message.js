@@ -169,7 +169,7 @@ window.addEventListener('message', function (evt) {
     // 课件方想收到此消息，根据此消息长度判断是否是重连。建议课件方过滤 $ 开头的消息
     action.render(data);
     return;
-  } 
+  }
   if (data.behavior === config.behaviors.sdkInit) {
     const newUserValue = data.content;
     // state 数据设置
@@ -179,13 +179,13 @@ window.addEventListener('message', function (evt) {
       state.mouseTrack.check();
     }
     return;
-  } 
+  }
   if (data.behavior === config.behaviors.mouseTrack) {
     const { x, y } = data.content;
-    state.mouseTrack.move(x, y);
+    state.mouseTrack && state.mouseTrack.move(x, y);
     return;
   }
-  
+
   // 如果历史同步已经完成 ，则直接渲染。否则加入队列等待渲染（setScene 除外，不做任何限制）
   if (state.isHistorySynchronized || data.behavior === config.behaviors.setScene) {
     action.render(data);
@@ -205,19 +205,18 @@ function postToRise(data) {
   if (!data || !data.behavior) {
     return;
   }
+  // log('send', data);
   // 特殊的 behavior
-  if (data.behavior === config.behaviors.ready) {
-    // 课件 ready 不需要发送出去
+  if (data.behavior === config.behaviors.load) {
+    // 课件 load 无需转发给其他端
+    data.offline = true;
+    action.onLoad();
+  } else if (data.behavior === config.behaviors.ready) {
+    // 课件 ready
+    data.offline = true;
     action.onCoursewareReady();
-  } else {
-    // log('send', data);
-    if (data.behavior === config.behaviors.load) {
-      // 课件 load 无需转发给其他端
-      data.offline = true;
-      action.onLoad();
-    }
-    window.parent.postMessage && window.parent.postMessage(data, '*');
   }
+  window.parent.postMessage && window.parent.postMessage(data, '*');
 }
 
 export {
