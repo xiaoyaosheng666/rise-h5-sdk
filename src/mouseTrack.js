@@ -4,6 +4,9 @@ import BufferJob from './bufferJob';
 import { isInRise, pxToVw, pxToVh } from './util';
 
 const domId = 'cw_mouse_track';
+const canvasId = 'GameCanvas';
+// 光标适配器大小
+const cursorSize = 26;
 /**
  * 鼠标轨迹
  */
@@ -16,6 +19,8 @@ class MouseTrack {
   interval = 300;
   // 启用状态，本地状态
   enabled = false;
+  // 事件已绑定，避免重复绑定
+  eventBinded = false;
   // 是否启用鼠标轨迹，来自教室端的控制
   get enableMouseTrack() {
     return store.user ? store.user.enableMouseTrack : true;
@@ -41,7 +46,7 @@ class MouseTrack {
 
   init() {
     // 必须要使用课件的 canvas ，直接在 document.body 上监听是收不到事件响应的，似乎是被 cocos 阻止事件冒泡了
-    this.container = document.getElementById('GameCanvas') || document.querySelector('canvas') || document.body;
+    this.container = document.getElementById(canvasId) || document.querySelector('canvas') || document.body;
     this.interval = store.user && store.user.interval ? store.user.interval : 300;
     // 先清除，这样就可以重复 new 不影响了
     this.clean();
@@ -49,11 +54,18 @@ class MouseTrack {
       this.createTarget();
       // 初始化时，调用 check 判断是否启用
       this.check();
+      // 保障 canvas 鼠标指针样式。因为有的课件方会在 canvas 鼠标点击时设置 cursor = default，显示鼠标指针。这里再给它隐藏掉
+      document.addEventListener('click', function () {
+        const canvas = document.querySelector(canvasId);
+        if (canvas) {
+          canvas.style.cursor = this.enableMouseTrack ? 'none' : null;
+        }
+      });
     }
   }
   // 创建一个模拟的鼠标指针元素
   createTarget() {
-    const size = '26px';
+    const size = `${cursorSize}px`;
     const dom = document.createElement('div');
     dom.id = domId;
     // 鼠标事件穿透
@@ -71,8 +83,10 @@ class MouseTrack {
     this.target = dom;
   }
   onMouseMove({ pageX, pageY }) {
-    const x = pxToVw(pageX);
-    const y = pxToVh(pageY);
+    // 减去 红点 一半的数值，使 红点 的中心位置
+    const offset = cursorSize / 2;
+    const x = pxToVw(pageX - offset);
+    const y = pxToVh(pageY - offset);
     this.move(x, y);
     // 加入消息缓冲任务队列
     new BufferJob({
@@ -117,11 +131,15 @@ class MouseTrack {
   // 检查当前应该启用还是禁用，并执行
   check() {
     if (this.enableMouseTrack) {
-      // 隐藏系统鼠标样式
-      this.container.style.cursor = 'none';
       if (this.hasControl) {
+        // 使用鼠标
+        this.container.style.cursor = null;
+        this.target.style.display = 'none';
         this.enable();
       } else {
+        // 使用红点，隐藏系统鼠标样式
+        this.container.style.cursor = 'none';
+        this.target.style.display = 'block';
         this.disable();
       }
     } else {

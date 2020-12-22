@@ -62,6 +62,14 @@ const action = {
         state.lastScene = lastScene;
         log('setScene', lastScene);
         action.render(lastScene);
+        if (lastScene.page) {
+          // 这个消息是通知教室设置白板的页码
+          const noticeRiseWb = Object.assign({}, lastScene, {
+            offline: true,
+            temp: true
+          });
+          postToRise(noticeRiseWb);
+        }
       }
     }
 
